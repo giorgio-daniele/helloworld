@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        SONARQUBE_ENV = 'SonarScanner' // Sostituisci con il nome configurato in Jenkins
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -17,6 +21,14 @@ pipeline {
         stage('Package') {
             steps {
                 sh 'mvn package'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    sh 'mvn sonar:sonar'
+                }
             }
         }
     }

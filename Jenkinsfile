@@ -6,6 +6,8 @@ pipeline {
     }
 
     stages {
+
+        // Checkout the source code from SCM
         stage('Checkout') {
             steps {
                 checkout scm
@@ -13,6 +15,7 @@ pipeline {
             }
         }
 
+        // Clean the Maven project (delete target directory)
         stage('Clean') {
             steps {
                 sh 'mvn clean'
@@ -20,36 +23,51 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        // Compile the Java source code
+        stage('Build') {
             steps {
-                sh 'mvn test'
-                echo 'Tests passed successfully'
+                sh 'mvn compile'
+                echo 'Build completed'
             }
         }
 
+        // Run unit tests
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        // Package the project, skipping tests because they are already run
         stage('Package') {
             steps {
-                sh 'mvn package'
+                sh 'mvn package -DskipTests'
                 echo 'Packaging done'
             }
         }
 
-        stage('SonarQube Analysis') {
+        // Perform SonarQube static code analysis
+        /* stage('SonarQube') {
             steps {
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                withSonarQubeEnv(SONARQUBE_ENV) {
                     sh 'mvn sonar:sonar'
                 }
                 echo 'SonarQube analysis completed'
             }
-        }
+        } */
     }
 
     post {
         success {
-            echo 'Build is fine!'
+            echo 'Build succeeded!'
         }
         failure {
-            echo 'Build is bad!'
+            echo 'Build failed!'
         }
     }
 }

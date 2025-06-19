@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    /* agent any */
+    agent { label 'debian' }
+
 
     environment {
         SONARQUBE_ENV = 'SonarQube'

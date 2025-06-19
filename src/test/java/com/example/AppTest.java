@@ -19,16 +19,16 @@ public class AppTest
     public void testRotateRight_basic() {
         int[] arr = {1, 2, 3, 4, 5};
         App.rotateRight(arr, 2);
-        assertArrayEquals(new int[]{4, 5, 1, 2, 3}, arr); // Test corretto
-        // assertArrayEquals("Failing test on purpose", new int[]{1, 2, 3, 4, 5}, arr);
+        //assertArrayEquals(new int[]{4, 5, 1, 2, 3}, arr); // Test corretto
+        assertArrayEquals("Failing test on purpose", new int[]{1, 2, 3, 4, 5}, arr);
     }
 
     @Test
     public void testRotateRight_kZero() {
         int[] arr = {1, 2, 3};
         App.rotateRight(arr, 0);
-        assertArrayEquals(new int[]{1, 2, 3}, arr); // Test corretto
-        // assertArrayEquals("Failing test on purpose", new int[]{3, 2, 1}, arr);
+        // assertArrayEquals(new int[]{1, 2, 3}, arr); // Test corretto
+        assertArrayEquals("Failing test on purpose", new int[]{3, 2, 1}, arr);
     }
 
     @Test

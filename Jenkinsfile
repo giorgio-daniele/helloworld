@@ -81,14 +81,14 @@ pipeline {
         */
 
         // Perform SonarQube static code analysis
-        /* stage('SonarQube') {
+        stage('SonarQube') {
             steps {
                 withSonarQubeEnv(SONARQUBE_ENV) {
                     sh 'mvn sonar:sonar'
                 }
                 echo 'SonarQube analysis completed'
             }
-        } */
+        }
     }
 
     post {

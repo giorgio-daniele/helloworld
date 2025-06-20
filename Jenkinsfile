@@ -171,8 +171,6 @@ pipeline {
 
         stage('BOM upload') {
             steps {
-                sh   'mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom'
-                echo 'BOM generated'
             }
         }
 

@@ -156,9 +156,12 @@ pipeline {
 
         /*
         * Se il quality gate è attraversato con successo,
-        * allora il codice può continuare la pipeline.
-        * Per esempio, può attraversare la procedura di
-        * controllo delle dipendenze
+        * allora il codice può continuare la pipeline. Per
+        * esempio, si può generare lo SBOM (Software Bill
+        * of Materials), ossia la lista delle dipendenze
+        * associate al codice sorgente che possono essere
+        * obsolete, possono contenere delle vulnerabilità
+        * note
         * 
         */
 
@@ -169,17 +172,15 @@ pipeline {
             }
         }
 
-        stage('BOM upload') {
-            steps {
-            }
-        }
 
-        stage('Package') {
-            steps {
-                sh   'mvn package -DskipTests'
-                echo 'Packaging done'
-            }
-        }
+        /* A questo  */
+
+        // stage('Package') {
+        //    steps {
+        //        sh   'mvn package -DskipTests'
+        //        echo 'Packaging done'
+        //    }
+        // }
 
     }
 

@@ -157,10 +157,24 @@ pipeline {
         /*
         * Se il quality gate è attraversato con successo,
         * allora il codice può continuare la pipeline.
-        * Per esempio, può attraversare le procedure di
-        * pacchettizzazione e distribuzione.
+        * Per esempio, può attraversare la procedura di
+        * controllo delle dipendenze
         * 
         */
+
+        stage('BOM generation') {
+            steps {
+                sh   'mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom'
+                echo 'BOM generated'
+            }
+        }
+
+        stage('BOM upload') {
+            steps {
+                sh   'mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom'
+                echo 'BOM generated'
+            }
+        }
 
         stage('Package') {
             steps {

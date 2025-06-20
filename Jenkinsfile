@@ -97,13 +97,6 @@ pipeline {
             }
         }
 
-        stage('Package') {
-            steps {
-                sh   'mvn package -DskipTests'
-                echo 'Packaging done'
-            }
-        }
-
         /*
         * Con l'installazione del SonarScannar,
         * Jenkins ha a disposizione un plugin che
@@ -169,10 +162,10 @@ pipeline {
         * 
         */
 
-        stage('Package Code') {
+        stage('Package') {
             steps {
-                echo 'Packaging the code...'
-                sh    'mvn package'
+                sh   'mvn package -DskipTests'
+                echo 'Packaging done'
             }
         }
 

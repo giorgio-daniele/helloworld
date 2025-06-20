@@ -131,6 +131,27 @@ pipeline {
                 echo 'SonarQube analysis completed'
             }
         }
+
+        /*
+        * Attendiamo risposta dal server SonarQube
+        * sull'esito dell'analisi 
+        *
+        *
+        */
+
+        stage("Quality gate") {
+            steps {
+                script {
+                    def qg = waitForQualityGate()
+                    if (qg.status != 'OK') {
+                        echo "Pipeline failed (quality gate) with status: ${qg.status}"
+                    } else {
+                        echo "Pipeline succes (quality gate) with status=${qg.status}"
+                    }
+                }
+            }
+        }
+
     }
 
     

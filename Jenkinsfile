@@ -182,7 +182,7 @@ pipeline {
         //    }
         // }
 
-        stage('Upload SBOM to Dependency-Track') {
+        stage('Upload SBOM') {
             steps {
                 withCredentials([string(credentialsId: 'dtrack-token', variable: 'DTRACK_API_KEY')]) {
                     script {

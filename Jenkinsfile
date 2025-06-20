@@ -1,6 +1,11 @@
 pipeline {
-    /* agent any */
-    agent { label 'debian' }
+    agent any
+    // agent { label 'debian' }
+
+    /* Mantieni master leggero mentre
+    i worker noti sono deputati allo
+    svolgimento delle pipelines
+    */
 
 
     environment {
@@ -64,6 +69,14 @@ pipeline {
                 }
             }
         }
+        
+        /** Lanciare sonarqube dopo aver compilato il
+        codice as best-practice
+        
+        Alla fine di ogni step, invocare pulizia
+        dei file temporanei (approfondire clearWs())
+        
+        */
 
         /**
         * The package stage is executed if and if only
@@ -76,6 +89,15 @@ pipeline {
                 echo 'Packaging done'
             }
         }
+
+
+        /** Dopo l'analisi statica del codice
+
+        in modo condizionale, si puo fare l'upload
+        del'artefatto
+        L'ordine è invertito: prima analisi statica
+        del codice e solo dopo l'eventuale pacchettizzazione
+        */
 
         /**
         * In the end, we ask SonarQube to inspect
@@ -91,6 +113,10 @@ pipeline {
                 echo 'SonarQube analysis completed'
             }
         }
+
+
+        /* QUi, potresti fare l'ispezione delle CVE
+        e altre policies con Dependency Track */
     }
 
     post {

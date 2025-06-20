@@ -134,21 +134,45 @@ pipeline {
 
         /*
         * Attendiamo risposta dal server SonarQube
-        * sull'esito dell'analisi 
+        * sull'esito dell'analisi. Dal momento che
+        * il server Jenkins non sa nulla del server
+        * SonarQube (di fatto è una macchina remota),
+        * il server Jenkins dovrà esporre un webhook
         *
-        *
+        * Il weebhook è genere un endpoint sul quale
+        * un process remoto esegue una POST. Quando
+        * si riceve la POST, si riceva la notifica e
+        * quindi il server che la riceve può sincro
+        * nizzarsi con il processo remoto.
         */
 
-        stage("Quality gate") {
+        stage("Quality Gate") {
             steps {
-                script {
-                    def qg = waitForQualityGate()
-                    if (qg.status != 'OK') {
-                        echo "Pipeline failed (quality gate) with status: ${qg.status}"
-                    } else {
-                        echo "Pipeline succes (quality gate) with status=${qg.status}"
+                timeout(time: 10, unit: 'MINUTES') {
+                    script {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Pipeline failed due to Quality Gate failure: ${qg.status}"
+                        } else {
+                            echo "Quality Gate passed: ${qg.status}"
+                        }
                     }
                 }
+            }
+        }
+
+        /*
+        * Se il quality gate è attraversato con successo,
+        * allora il codice può continuare la pipeline.
+        * Per esempio, può attraversare le procedure di
+        * pacchettizzazione e distribuzione.
+        * 
+        */
+
+        stage('Package Code') {
+            steps {
+                echo 'Packaging the code...'
+                sh    'mvn package'
             }
         }
 

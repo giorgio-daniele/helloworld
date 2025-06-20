@@ -187,7 +187,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'dtrack-token', variable: 'DTRACK_API_KEY')]) {
                     script {
                         def projectUUID = 'helloworld'
-                        def dtrackUrl   = 'https://dtrack-apiserver/api/v1/bom'
+                        def dtrackUrl   = 'http://dtrack-apiserver/api/v1/bom'
                         def sbomPath    = 'target/bom.xml'
 
                         if (!fileExists(sbomPath)) {

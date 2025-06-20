@@ -182,6 +182,30 @@ pipeline {
         //    }
         // }
 
+        stage('Upload SBOM to Dependency-Track') {
+            steps {
+                withCredentials([string(credentialsId: 'dtrack-token', variable: 'DTRACK_API_KEY')]) {
+                    script {
+                        def projectUUID = 'helloworld'
+                        def dtrackUrl   = 'https://apiserver/api/v1/bom'
+                        def sbomPath    = 'target/bom.xml'
+
+                        if (!fileExists(sbomPath)) {
+                            error "SBOM file not found at ${sbomPath}"
+                        }
+
+                        sh """
+                            curl -X POST "${dtrackUrl}" \\
+                                -H "X-Api-Key: ${DTRACK_API_KEY}" \\
+                                -H "Content-Type: multipart/form-data" \\
+                                -F "project=${projectUUID}" \\
+                                -F "bom=@${sbomPath}" 
+                        """
+                    }
+                }
+            }
+        }
+
     }
 
     

@@ -7,6 +7,9 @@ pipeline {
     svolgimento delle pipelines
     */
 
+    tools {
+        maven "MavenTooling"
+    }
 
     environment {
         SONARQUBE_ENV = 'SonarQube'

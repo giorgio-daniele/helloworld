@@ -1,7 +1,21 @@
-def httpCode   = null
-def body       = null
-def parsedBody = null
-def token      = null
+def token = null
+
+def postSBOM(api, key, uid, bomPath) {
+    def res = sh(
+        script: """
+            curl -s -w '%{http_code}\\n' -X POST "$api" \\
+                -H "X-Api-Key: $key"                    \\
+                -H "Content-Type: multipart/form-data"  \\
+                -F "project=$uid"                       \\
+                -F "autocreate=true"                    \\
+                -F "bom=@$bomPath"
+        """, returnStdout: true).trim()
+    def httpCode   = res[-3..-1]
+    def body       = res[0..-4]
+    def parsedBody = readJSON(text: body)
+    return [httpCode, parsedBody]
+}
+
 
 pipeline {
     agent any
@@ -66,45 +80,23 @@ pipeline {
         stage("SBOM Upload") {
             steps {
                 script {
-                    try {
-                        // Post the SBOM
-                        withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                            withEnv([
-                                "API=http://dtrack-backend:8080/api/v1/bom",
-                                "UID=e4368795-5409-4b60-bb9d-d448732becb0",
-                                "BOM=target/bom.xml"
-                            ]) {
-
-                                // Run HTTP
-                                def res = sh(
-                                    script: '''
-                                        curl                                    \
-                                        -s -w '%{http_code}\n'                  \
-                                        -X  POST "$API"                         \
-                                        -H "X-Api-Key: $KEY"                    \
-                                        -H "Content-Type: multipart/form-data"  \
-                                        -F "project=$UID"                       \
-                                        -F "autocreate=true"                    \
-                                        -F "bom=@$BOM"
-                                    ''', returnStdout: true).trim()
-
-                                // Separate body and HTTP code
-                                httpCode   = res[-3..-1]
-                                body       = res[0..-4]
-                                parsedBody = readJSON(text: body)
-                                token      = parsedBody["token"]
-
-                                echo "HTTP Code: ${httpCode}"
-                                echo "Token: ${token}"
-                            }
+                    withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
+                        withEnv([
+                            "API=http://dtrack-backend:8080/api/v1/bom",
+                            "UID=e4368795-5409-4b60-bb9d-d448732becb0",
+                            "BOM=target/bom.xml"
+                        ]) {
+                            def (httpCode, parsedBody) = postSBOM(env.API, env.KEY, env.UID, env.BOM)
+                            echo "HTTP Code: ${httpCode}"
+                            echo "Token: ${parsedBody.token}"
+                            token = parsedBody.token
                         }
-                    } catch (err) {
-                        error "SBOM upload failed: ${err.getMessage()}"
                     }
                 }
             }
         }
 
+        /*
         stage("SBOM Findings") {
             steps {
                 script {
@@ -127,7 +119,9 @@ pipeline {
                                     ''', returnStdout: true).trim()
 
                                 // Separate body and HTTP code
-                                echo "${res}"
+                                def httpCode   = res[-3..-1]
+                                def body       = res[0..-4]
+                                def parsedBody = readJSON(text: body)
                             }
                         }
                     } catch (err) {
@@ -135,7 +129,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
     }
 }

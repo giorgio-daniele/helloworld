@@ -43,6 +43,10 @@ pipeline{
         // Static Application Security Testing - SAST
         stage("SonarScanner"){
             steps {
+                // Inject SonarQube configuration - the URL and the token
+                // "SonarQubeServer" is the name of the configuration you
+                // find browsing at:
+                // "Manage Jenkins" -> "Configure System" -> "SonarQube servers"
                 withSonarQubeEnv("SonarQubeServer") {
                     sh "mvn sonar:sonar"
                 }
@@ -51,11 +55,13 @@ pipeline{
 
         // Quality Gate - from SonarQube server
         stage("SonarQube"){
-            script {
-                try {
-                    waitForQualityGate abortPipeline: true
-                } catch (err) {
-                    error "EoP. Quality gate has failed"
+            steps {
+                script {
+                    try {
+                        waitForQualityGate abortPipeline: true, timeout: 300
+                    } catch (err) {
+                        error "EoP. Quality gate has failed"
+                    }
                 }
             }
         }

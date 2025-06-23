@@ -43,8 +43,9 @@ pipeline{
         // Static Application Security Testing - SAST
         stage("SAST"){
             steps {
-                withSonarQubeEnv("SonarQubeServer")
-                sh "mvn sonar:sonar"
+                withSonarQubeEnv("SonarQubeServer") {
+                    sh "mvn sonar:sonar"
+                }
             }
             post {
                 always {

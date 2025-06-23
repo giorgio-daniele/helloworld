@@ -73,17 +73,17 @@ pipeline {
 
                 script {
 
-                    def apiURL   = "http://dtrack-backend:8080/api/v1/bom"
+                    def apiURL   = "http://dtrack-backend:8080/api/v1"
                     def apiKey   = "odt_jnSed9yc_yLqy3n2NdVmBdAIIeMPFPAeerZWotCms"
                     def sbomPath = "target/bom.xml"
                     def projUUID = "e4368795-5409-4b60-bb9d-d448732becb0"
 
-                    try {
-                        // Generate the SBOM
-                        sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
+                    // Generate the SBOM
+                    sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
 
+                    try {
                         // POST it to Dependency track
-                        withEnv(["URL=${apiURL}", "KEY=${apiKey}", "BOM=${sbomPath}", "UID=${projUUID}"]) {
+                        withEnv(["URL=${apiURL}/bom", "KEY=${apiKey}", "BOM=${sbomPath}", "UID=${projUUID}"]) {
                             sh """
                                 curl -s -X POST     "\$URL"                     \\
                                     -H "X-Api-Key:   \$KEY"                     \\
@@ -95,7 +95,7 @@ pipeline {
                             """
                         }
                     } catch (Exception e) {
-                        error "Something bad happened!"
+                        error "Something bad happened on posting!"
                     }
 
                     // Inspect the temporary files
@@ -107,6 +107,22 @@ pipeline {
                     def parsedBody  = readJSON(text: body)
                     def token       = parsedBody["token"]
                     echo "Token = ${token}"
+
+                    try {
+                        // GET the list of findings
+                        withEnv(["URL=${apiURL}finding/project/${projUUID}", "KEY=${apiKey}"]) {
+                            sh """
+                                curl -s -X GET      "\$URL"                     \\
+                                    -H "X-Api-Key:   \$KEY"                     \\
+                                    -H "accept: application/json" > http.body
+                                echo \$? > http.code
+                            """
+                        }
+                    } catch (Exception e) {
+                        error "Something bad happened on getting findings!"
+                    }
+
+
                 }
             }
         }

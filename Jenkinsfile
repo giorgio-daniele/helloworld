@@ -83,17 +83,14 @@ pipeline {
                     def projVers = "1.0"
 
                     /* Use HTTP to request the API server to process the SBOM */
-                    def res = sh(
-                        script: """
-                        curl -X POST "${apiURL}"                    \
-                            -H "X-Api-Key: ${apiKey}"               \
-                            -H "Content-Type: multipart/form-data"  \
-                            -F "project=${projUUID}"                \
-                            -F "autocreate=true"                    \
-                            -F "bom=@${sbomPath}" > http.res
-                        echo $? > http.code
-                        """
-                    )
+                    sh """
+                        curl -X POST "${dtrackUrl}"                    \\
+                                -H "X-Api-Key: ${DTRACK_API_KEY}"      \\
+                                -H "Content-Type: multipart/form-data" \\
+                                -F "project=${projectUUID}"            \\
+                                -F "autocreate=true"                   \\
+                                -F "bom=@${sbomPath}" > http.res && echo $? > http.code 
+                    """
 
                     def body = readFile('http.body').trim()
                     def code = readFile('http.code').trim().toInteger()

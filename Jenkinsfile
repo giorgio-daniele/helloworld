@@ -55,7 +55,6 @@ pipeline{
 
         // Quality Gate - from SonarQube server
         stage("SonarQube"){
-            steps {
                 timeout(time: 5, unit: "MINUTES") {
                     def qg = waitForQualityGate()
                     echo qg
@@ -63,7 +62,6 @@ pipeline{
                         error "Pipeline aborted due to quality gate failure: ${qg.status}"
                     }
                 }
-            }
         }
     }
 }

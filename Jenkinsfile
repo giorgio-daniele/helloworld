@@ -86,21 +86,21 @@ pipeline {
 
                     def res = sh (
                         script: """
-                            curl -sS -f -X POST ${apiURL} \\
-                                    -H "X-Api-Key: ${apiKey}" \\
+                            curl -sS -f -X POST ${apiURL}                  \\
+                                    -H "X-Api-Key: ${apiKey}"              \\
                                     -H "Content-Type: multipart/form-data" \\
-                                    -F "projectName=${projName}" \\
-                                    -F "projectVersion=${projVers}" \\
-                                    -F "autocreate=true" \\
+                                    -F "projectName=${projName}"           \\
+                                    -F "projectVersion=${projVers}"        \\
+                                    -F "autocreate=true"                   \\
                                     -F "bom=@${sbomPath}"
                             """,
                             returnStdout: true,
                             returnStatus: true,
                         )
-                        def statusCode   = res.status
-                        def responseBody = res.stdout.trim()
-                        echo "${statusCode}"
-                        echo "${responseBody}"
+                        def code = res.status
+                        def body = res.stdout.trim()
+                        echo "${code}"
+                        echo "${body}"
                 }
             }
         }

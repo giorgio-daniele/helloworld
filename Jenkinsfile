@@ -113,10 +113,15 @@ pipeline {
                     // POST the SBOM
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                         withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {
-                            def (httpCode, parsedBody) = postSBOM("${BASE_API}/bom", env.KEY, env.UID, env.BOM)
-                            echo "HTTP Code: ${httpCode}"
-                            echo "Token: ${parsedBody.token}"
-                            token = parsedBody.token
+                            
+                            try {
+                                def (httpCode, parsedBody) = postSBOM("${BASE_API}/bom", env.KEY, env.UID, env.BOM)
+                                echo "HTTP Code: ${httpCode}"
+                                echo "Token: ${parsedBody.token}"
+                                token = parsedBody.token
+                            } catch (Exception  e) {
+                                error "${e}"
+                            }
                         }
                     }
                 }
@@ -127,25 +132,30 @@ pipeline {
             steps {
                 script {
                     def BASE_API = "http://dtrack-backend:8080/api/v1"
+
                     // GET the findings
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                         withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
                             
-                            // Await the report to be ready
-                            def ready = false;
-                            while(status == false) {
-                                def (httpCode, parsedBody) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
-                                def status = parsedBody["processing"]
-                                if (status == "true") {
-                                    sleep(time: 5000, unit: "MILLISECONDS")
-                                } else {
-                                    ready = true
+                            try {
+                                // Await the report to be ready
+                                def ready = false;
+                                while(status == false) {
+                                    def (httpCode, parsedBody) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
+                                    def status = parsedBody["processing"]
+                                    if (status == "true") {
+                                        sleep(time: 5000, unit: "MILLISECONDS")
+                                    } else {
+                                        ready = true
+                                    }
                                 }
-                            }
 
-                            // Get the findings
-                            def (httpCode, parsedBody) = getFindings("${BASE_API}/finding/project/${env.UID}", env.KEY)
-                            echo "${httpCode} ${parsedBody}"
+                                // Get the findings
+                                def (httpCode, parsedBody) = getFindings("${BASE_API}/finding/project/${env.UID}", env.KEY)
+                                echo "${httpCode} ${parsedBody}"
+                            } catch (Exception  e) {
+                                error "${e}"
+                            }
                         }
                     }
                 }

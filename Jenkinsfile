@@ -5,12 +5,6 @@ pipeline {
         maven "Maven"
     }
 
-    environment {
-        API_URL      = "http://dtrack-backend:8080/api/v1/bom"
-        SBOM_PATH    = "target/bom.xml"
-        PROJECT_UUID = "e4368795-5409-4b60-bb9d-d448732becb0"
-    }
-
     stages {
         stage("Checkout") {
             steps {
@@ -65,9 +59,9 @@ pipeline {
                         sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
 
                         // Post the SBOM
-                        withCredentials([string(credentialsId: "dtrack-backend-token", variable: "API_KEY")]) {
+                        withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                             withEnv([
-                                "URL=http://dtrack-backend:8080/api/v1/bom",
+                                "API=http://dtrack-backend:8080/api/v1/bom",
                                 "UID=e4368795-5409-4b60-bb9d-d448732becb0",
                                 "BOM=target/bom.xml"
                             ]) {
@@ -81,9 +75,7 @@ pipeline {
                                         -F "project=$UID"                       \
                                         -F "autocreate=true"                    \
                                         -F "bom=@$SBOM_PATH"
-                                    ''',
-                                    returnStdout: true
-                                ).trim()
+                                    ''', returnStdout: true).trim()
                                 echo "${res}"
                             }
                         }

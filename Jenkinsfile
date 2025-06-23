@@ -96,18 +96,25 @@ pipeline {
                                 -H "Content-Type: multipart/form-data"         \
                                 -F "project=$PROJ_UUID"                        \
                                 -F "autocreate=true"                           \
-                                -F "bom=@$SBOM_PATH" > http.body 2>&1
+                                -F "bom=@$SBOM_PATH" > http.body
                             echo $? > http.code
                         '''
                     }
+                    
+                    // Read the code of the command "curl" that has been executed
+                    def code = readFile('http.code').trim().toInteger()
 
-                    def body        = readFile('http.body').trim()
-                    def parsedBody  = readJSON(text: body)
-                    def token       = parsedBody["token"]
-                    def code        = readFile('http.code').trim().toInteger()
 
-                    echo "Token: \n${token}"
-                    echo "Code:  \n${code}"
+                    echo "${code}"
+                    /* To read a JSON dictionary, use a plugin called pipeline-utility-plugin */
+
+                    // def body        = readFile('http.body').trim()
+                    // def parsedBody  = readJSON(text: body)
+                    // def token       = parsedBody["token"]
+                    // def code        = readFile('http.code').trim().toInteger()
+
+                    // echo "Token: \n${token}"
+                    // echo "Code:  \n${code}"
                 }
             }
         }

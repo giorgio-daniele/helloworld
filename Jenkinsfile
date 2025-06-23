@@ -1,4 +1,5 @@
-def token = null
+def token  = null
+def status = false
 
 def postSBOM(api, key, uid, bomPath) {
     def res = sh(
@@ -19,10 +20,10 @@ def postSBOM(api, key, uid, bomPath) {
     return [httpCode, parsedBody]
 }
 
-def getFindings(api, key, uid) {
+def getFindings(api, key) {
     def res = sh(
         script: """
-            curl -s -w '%{http_code}\\n' -X GET "$api/$uid" \\
+            curl -s -w '%{http_code}\\n' -X GET "$api"      \\
             -H "X-Api-Key: $key"                            \\
             -H "accept: application/json"
             """, returnStdout: true).trim()
@@ -34,10 +35,10 @@ def getFindings(api, key, uid) {
     return [httpCode, parsedBody]
 }
 
-def getStatus(api, key, uid) {
+def getStatus(api, key) {
     def res = sh(
         script: """
-            curl -s -w '%{http_code}\\n' -X GET "$api/$uid" \\
+            curl -s -w '%{http_code}\\n' -X GET "$api"      \\
             -H "X-Api-Key: $key"                            \\
             -H "accept: application/json"
             """, returnStdout: true).trim()
@@ -112,8 +113,8 @@ pipeline {
                     def BASE_API = "http://dtrack-backend:8080/api/v1"
                     // POST the SBOM
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                        withEnv(["API=${BASE_API}/bom", "UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {
-                            def (httpCode, parsedBody) = postSBOM(env.API, env.KEY, env.UID, env.BOM)
+                        withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {
+                            def (httpCode, parsedBody) = postSBOM("${BASE_API}/bom", env.KEY, env.UID, env.BOM)
                             echo "HTTP Code: ${httpCode}"
                             echo "Token: ${parsedBody.token}"
                             token = parsedBody.token
@@ -129,49 +130,22 @@ pipeline {
                     def BASE_API = "http://dtrack-backend:8080/api/v1"
                     // GET the findings
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                        withEnv(["API=${BASE_API}/finding/project", "UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
-                            def (httpCode, parsedBody) = getFindings(env.API, env.KEY, env.UID)
-                            echo "${httpCode} ${parsedBody}"
+                        withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
+
+                            // Await the report to be ready
+                            while(status == false) {
+                                def (httpCode, parsedBody) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
+                                sleep(1000)
+                                echo "${parsedBody}"
+                            }
+
+                            //def (httpCode, parsedBody) = getFindings("${BASE_API}/finding/project/${env.UID}", env.KEY)
+                            //echo "${httpCode} ${parsedBody}"
                         }
                     }
                 }
             }
         }
-
-        /*
-        stage("SBOM Findings") {
-            steps {
-                script {
-                    try {
-                        // GET findings associated to uploaded SBOM
-                        withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                            withEnv([
-                                "API=http://dtrack-backend:8080/api/v1/finding/project",
-                                "UID=e4368795-5409-4b60-bb9d-d448732becb0",
-                            ]) {
-
-                                // Run HTTP
-                                def res = sh(
-                                    script: '''
-                                        curl                                    \
-                                        -s -w '%{http_code}\n'                  \
-                                        -X  GET "$API/$UID"                     \
-                                        -H "X-Api-Key: $KEY"                    \
-                                        -H "accept: application/json"
-                                    ''', returnStdout: true).trim()
-
-                                // Separate body and HTTP code
-                                def httpCode   = res[-3..-1]
-                                def body       = res[0..-4]
-                                def parsedBody = readJSON(text: body)
-                            }
-                        }
-                    } catch (err) {
-                        error "SBOM findings failed: ${err.getMessage()}"
-                    }
-                }
-            }
-        }*/
 
     }
 }

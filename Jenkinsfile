@@ -55,7 +55,6 @@ pipeline {
             }
         }
 
-        /*
         stage("Test Report") {
             steps {
                 junit "target/surefire-reports/*.xml"
@@ -82,7 +81,7 @@ pipeline {
                     }
                 }
             }
-        }*/
+        }
 
         stage("SBOM Creation") {
             steps {

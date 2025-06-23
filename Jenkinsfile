@@ -89,7 +89,7 @@ pipeline {
                             curl -sS -f -X POST ${apiURL}                  \\
                                     -H "X-Api-Key: ${apiKey}"              \\
                                     -H "Content-Type: multipart/form-data" \\
-                                    -F "project=${projectUUID}"            \\
+                                    -F "project=${projUUID}"               \\
                                     -F "autocreate=true"                   \\
                                     -F "bom=@${sbomPath}"
                             """,

@@ -67,5 +67,13 @@ pipeline {
                 }
             }
         }
+
+        stage("Depedency-Track") {
+            steps {
+                sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
+            }
+        }
+
+
     }
 }

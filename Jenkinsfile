@@ -41,15 +41,21 @@ pipeline{
         }
         
         // Static Application Security Testing - SAST
-        stage("SAST"){
+        stage("SonarScanner"){
             steps {
                 withSonarQubeEnv("SonarQubeServer") {
                     sh "mvn sonar:sonar"
                 }
             }
-            post {
-                always {
-                    junit "target/surefire-reports/*.xml"
+        }
+
+        // Quality Gate - from SonarQube server
+        stage("SonarQube"){
+            script {
+                try {
+                    waitForQualityGate abortPipeline: true
+                } catch (err) {
+                    error "EoP. Quality gate has failed"
                 }
             }
         }

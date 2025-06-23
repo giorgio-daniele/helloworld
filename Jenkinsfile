@@ -83,17 +83,23 @@ pipeline {
                     def projVers = "1.0"
 
                     /* Use HTTP to request the API server to process the SBOM */
-
-                    sh """
+                    def res = sh(
+                        script: """
                         #!/bin/bash
+
+                        # POST the SBOM over the API server and save the
+                        # answer on a file
                         curl -X POST ${apiURL}                         \\
                             -H "X-Api-Key: ${apiKey}"                  \\
                             -H "Content-Type: multipart/form-data"     \\
                             -F "project=${projUUID}"                   \\
                             -F "autocreate=true"                       \\
                             -F "bom=@${sbomPath}" > res.dat
+                        # Save also the return value of the comand itself
+                        echo \$? >> curl_status.txt
                         cat res.dat
-                    """
+                        """
+                    )
                 }
             }
         }

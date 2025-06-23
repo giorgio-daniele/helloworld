@@ -103,6 +103,7 @@ pipeline {
         stage("SBOM Upload") {
             steps {
                 script {
+                    // POST the SBOM
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                         withEnv(["API=http://dtrack-backend:8080/api/v1/bom", "UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {
                             def (httpCode, parsedBody) = postSBOM(env.API, env.KEY, env.UID, env.BOM)
@@ -115,9 +116,10 @@ pipeline {
             }
         }
 
-        stage("SBOM Upload") {
+        stage("SBOM Findings") {
             steps {
                 script {
+                    // GET the findings
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                         withEnv(["API=http://dtrack-backend:8080/api/v1/findings", "UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
                             def (httpCode, parsedBody) = getFindings(env.API, env.KEY, env.UID)

@@ -79,20 +79,23 @@ pipeline {
                     def projUUID = "e4368795-5409-4b60-bb9d-d448732becb0"
 
                     try {
+                        // Generate the SBOM
+                        sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
+
+                        // POST it to Dependency track
                         withEnv(["URL=${apiURL}", "KEY=${apiKey}", "BOM=${sbomPath}", "UID=${projUUID}"]) {
-                            sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
                             sh """
                                 curl -s -X POST     "\$URL"                     \\
                                     -H "X-Api-Key:   \$KEY"                     \\
-                                    -H "Content-Type: multipart/form-data"     \\
+                                    -H "Content-Type: multipart/form-data"      \\
                                     -F "project=\$UID"                          \\
-                                    -F "autocreate=true"                       \\
+                                    -F "autocreate=true"                        \\
                                     -F "bom=@\$BOM" > http.body
                                 echo \$? > http.code
                             """
                         }
                     } catch (Exception e) {
-                        echo "${e.getMessage()}"
+                        error "Something bad happened!"
                     }
 
 

@@ -13,29 +13,22 @@ pipeline{
         }
         stage("Clean"){
             steps {
-                withMaven {
-                    sh "mvn clean verify"
-                }
+                sh "mvn clean verify"
             }
         }
         stage("Build"){
             steps {
-                withMaven {
-                    sh "mvn compile"
-                }
+                sh "mvn compile"
             }
         }
         stage("Test"){
             steps {
-                withMaven {
-                    sh "mvn test"
-                }
+                sh "mvn test"
             }
             post {
                 always {
                     junit "target/surefire-reports/*.xml"
                 }
-        
             }
         }
     }

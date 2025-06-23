@@ -99,9 +99,9 @@ pipeline {
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                         withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {                           
                             try {
-                                def (code, body) = postSBOM("${BASE_API}/bom", env.KEY, env.UID, env.BOM)
-                                // def parsedBody   = readJSON(text: body)
-                                // writeFile(file: "token.data", text: parsedBody.token)
+                                def (code, bodyStr) = postSBOM("${BASE_API}/bom", env.KEY, env.UID, env.BOM)
+                                def parsedBody   = readJSON(text: bodyStr)
+                                writeFile(file: "token.data", text: parsedBody.token)
                             } catch (Exception  e) {
                                 error "${e}"
                             }
@@ -122,7 +122,8 @@ pipeline {
                             try {
                                 def proc = true;
                                 while(proc) {
-                                    def (code, body) = get("${BASE_API}/event/token/${env.UID}", env.KEY)
+                                    def (code, bodyStr) = get("${BASE_API}/event/token/${env.UID}", env.KEY)
+                                    def body = readJSON(text: bodyStr)
                                     proc = body["proc"]
                                     if (proc) {
                                         sleep(time: 5, unit: "SECONDS")

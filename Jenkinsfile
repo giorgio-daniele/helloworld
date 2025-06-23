@@ -58,9 +58,8 @@ pipeline {
                                 -H "Content-Type: multipart/form-data" \\
                                 -F "project=${env.PROJECT_UUID}"       \\
                                 -F "autocreate=true"                   \\
-                                -F "bom=@${env.SBOM_PATH}"             \\
-                                -w "%{http_code}"                      \\
-                                -o http.body > http.code
+                                -F "bom=@${env.SBOM_PATH}"  > http.body
+                                echo \$? >> http.code
                             """
                         }
                         
@@ -74,6 +73,7 @@ pipeline {
                         def body = readFile('http.body').trim()
                         echo "Response body: ${body}"
                         
+
                         // Optional: Parse JSON response if needed
                         /*
                         if (body && body.startsWith('{')) {

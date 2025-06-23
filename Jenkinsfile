@@ -13,10 +13,10 @@ def postSBOM(api, key, uid, bomPath) {
             returnStdout: true).trim()
 
     // Seperate code and body
-    def httpCode   = res[-3..-1]
+    def code   = res[-3..-1]
     def body       = res[0..-4]
     def parsedBody = readJSON(text: body)
-    return [httpCode, parsedBody]
+    return [code, parsedBody]
 }
 
 def getFindings(api, key) {
@@ -27,11 +27,13 @@ def getFindings(api, key) {
             -H "Accept: application/json"
             """, returnStdout: true).trim()
 
+    echo "${res}"
+
     // Seperate code and body
-    def httpCode   = res[-3..-1]
+    def code   = res[-3..-1]
     def body       = res[0..-4]
     def parsedBody = readJSON(text: body)
-    return [httpCode, parsedBody]
+    return [code, parsedBody]
 }
 
 def getStatus(api, key) {
@@ -43,10 +45,10 @@ def getStatus(api, key) {
             """, returnStdout: true).trim()
 
     // Seperate code and body
-    def httpCode   = res[-3..-1]
+    def code       = res[-3..-1]
     def body       = res[0..-4]
     def parsedBody = readJSON(text: body)
-    return [httpCode, parsedBody]
+    return [code, parsedBody]
 }
 
 
@@ -110,13 +112,12 @@ pipeline {
             steps {
                 script {
                     def BASE_API = "http://dtrack-backend:8080/api/v1"
-                    // POST the SBOM
+
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                        withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {
-                            
+                        withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {                           
                             try {
-                                def (httpCode, parsedBody) = postSBOM("${BASE_API}/bom", env.KEY, env.UID, env.BOM)
-                                writeFile(file: "token.data", text: parsedBody.token)
+                                def (code, body) = postSBOM("${BASE_API}/bom", env.KEY, env.UID, env.BOM)
+                                writeFile(file: "token.data", text: body.token)
                             } catch (Exception  e) {
                                 error "${e}"
                             }
@@ -134,22 +135,20 @@ pipeline {
                     // GET the findings
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                         withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
-                            
+  
                             try {
-
-                                // Await the report to be ready
                                 def proc = true;
                                 while(proc) {
-                                    def (httpCode, parsedBody) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
-                                    proc = parsedBody["proc"]
+                                    def (code, body) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
+                                    proc = body["proc"]
                                     if (proc) {
                                         sleep(time: 5, unit: "SECONDS")
                                     }
                                 }
 
                                 // Get the findings
-                                def (httpCode, parsedBody) = getFindings("${BASE_API}/finding/project/${env.UID}", env.KEY)
-                                echo "${parsedBody}"
+                                def (code, body) = getFindings("${BASE_API}/finding/project/${env.UID}", env.KEY)
+                                echo "${body}"
                             } catch (Exception  e) {
                                 error "${e}"
                             }

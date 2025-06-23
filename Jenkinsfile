@@ -1,8 +1,8 @@
-def token = null
-
 def postSBOM(api, key, uid, bomPath) {
     def res = sh(
-        script: """
+        script: 
+            """
+            #!/bin/bash
             curl -s -w '%{http_code}\\n' -X POST "$api" \\
                 -H "X-Api-Key: $key"                    \\
                 -H "Content-Type: multipart/form-data"  \\
@@ -19,12 +19,14 @@ def postSBOM(api, key, uid, bomPath) {
 }
 
 def get(api, key) {
-    def res = sh(
-        script: """
+    def res = sh(script: 
+            """
+            #!/bin/bash
             curl -s -w '%{http_code}\\n' -X GET "$api"      \\
             -H "X-Api-Key: $key"                            \\
             -H "Accept: application/json"
-            """, returnStdout: true).trim()
+            """, 
+            returnStdout: true).trim()
 
     // Seperate code and body
     def code       = res[-3..-1]

@@ -13,30 +13,13 @@ def postSBOM(api, key, uid, bomPath) {
             returnStdout: true).trim()
 
     // Seperate code and body
-    def code   = res[-3..-1]
+    def code       = res[-3..-1]
     def body       = res[0..-4]
     def parsedBody = readJSON(text: body)
     return [code, parsedBody]
 }
 
-def getFindings(api, key) {
-    def res = sh(
-        script: """
-            curl -s -w '%{http_code}\\n' -X GET "$api"      \\
-            -H "X-Api-Key: $key"                            \\
-            -H "Accept: application/json"
-            """, returnStdout: true).trim()
-
-    echo "${res}"
-
-    // Seperate code and body
-    def code   = res[-3..-1]
-    def body       = res[0..-4]
-    def parsedBody = readJSON(text: body)
-    return [code, parsedBody]
-}
-
-def getStatus(api, key) {
+def get(api, key) {
     def res = sh(
         script: """
             curl -s -w '%{http_code}\\n' -X GET "$api"      \\
@@ -46,8 +29,12 @@ def getStatus(api, key) {
 
     // Seperate code and body
     def code       = res[-3..-1]
-    def body       = res[0..-4]
+    def body       = res[0..-4].trim()
     def parsedBody = readJSON(text: body)
+
+    
+    echo "${body}"
+
     return [code, parsedBody]
 }
 
@@ -139,7 +126,7 @@ pipeline {
                             try {
                                 def proc = true;
                                 while(proc) {
-                                    def (code, body) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
+                                    def (code, body) = get("${BASE_API}/event/token/${env.UID}", env.KEY)
                                     proc = body["proc"]
                                     if (proc) {
                                         sleep(time: 5, unit: "SECONDS")
@@ -147,7 +134,7 @@ pipeline {
                                 }
 
                                 // Get the findings
-                                def (code, body) = getFindings("${BASE_API}/finding/project/${env.UID}", env.KEY)
+                                def (code, body) = get("${BASE_API}/finding/project/${env.UID}", env.KEY)
                                 echo "${body}"
                             } catch (Exception  e) {
                                 error "${e}"

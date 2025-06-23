@@ -1,5 +1,4 @@
-def token  = null
-def status = false
+def token = null
 
 def postSBOM(api, key, uid, bomPath) {
     def res = sh(
@@ -130,17 +129,22 @@ pipeline {
                     def BASE_API = "http://dtrack-backend:8080/api/v1"
                     // GET the findings
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                        withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0", "TKN"=token]) {
-
+                        withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
+                            
                             // Await the report to be ready
+                            def ready = false;
                             while(status == false) {
-                                def (httpCode, parsedBody) = getStatus("${BASE_API}/bom/token/${env.TKN}", env.KEY)
-                                echo "${parsedBody}"
-                                sleep(time: 1000, unit: "MILLISECONDS")
+                                def (httpCode, parsedBody) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
+                                if (parsedBody["processing"]) {
+                                    sleep(time: 5000, unit: "MILLISECONDS")
+                                } else {
+                                    ready = true
+                                }
                             }
 
-                            //def (httpCode, parsedBody) = getFindings("${BASE_API}/finding/project/${env.UID}", env.KEY)
-                            //echo "${httpCode} ${parsedBody}"
+                            // Get the findings
+                            def (httpCode, parsedBody) = getFindings("${BASE_API}/finding/project/${env.UID}", env.KEY)
+                            echo "${httpCode} ${parsedBody}"
                         }
                     }
                 }

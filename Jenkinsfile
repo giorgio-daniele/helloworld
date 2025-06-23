@@ -72,13 +72,19 @@ pipeline {
             steps {
                 sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
                 script {
+
+                    /* Define the parameters to use in the CURL operation */
+
                     def apiURL   = "http://dtrack-backend:8080/api/v1/bom"
                     def apiKey   = "odt_jnSed9yc_yLqy3n2NdVmBdAIIeMPFPAeerZWotCms"
                     def sbomPath = "target/bom.xml"
                     def projName = "helloworld"
                     def projUUID = "e4368795-5409-4b60-bb9d-d448732becb0"
                     def projVers = "1.0"
-                    sh """
+
+                    /* Use HTTP to request the API server to process the SBOM */
+
+                    def res = sh """
                         curl -X POST          ${apiURL}             \\
                             -H "X-Api-Key:    ${apiKey}"            \\
                             -H "Content-Type: multipart/form-data"  \\
@@ -86,6 +92,8 @@ pipeline {
                             -F "autocreate=true"                    \\
                             -F "bom=@${sbomPath}"
                         """
+
+                    echo "$res"
                 }
             }
         }

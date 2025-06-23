@@ -100,8 +100,8 @@ pipeline {
                         withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {                           
                             try {
                                 def (code, body) = postSBOM("${BASE_API}/bom", env.KEY, env.UID, env.BOM)
-                                def parsedBody   = readJSON(text: body)
-                                writeFile(file: "token.data", text: parsedBody.token)
+                                // def parsedBody   = readJSON(text: body)
+                                // writeFile(file: "token.data", text: parsedBody.token)
                             } catch (Exception  e) {
                                 error "${e}"
                             }

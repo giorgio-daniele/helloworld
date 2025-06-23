@@ -74,7 +74,7 @@ pipeline {
                                         -H "Content-Type: multipart/form-data"  \
                                         -F "project=$UID"                       \
                                         -F "autocreate=true"                    \
-                                        -F "bom=@$SBOM_PATH"
+                                        -F "bom=@$BOM"
                                     ''', returnStdout: true).trim()
                                 echo "${res}"
                             }

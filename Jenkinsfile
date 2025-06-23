@@ -139,14 +139,12 @@ pipeline {
                             
                             try {
                                 // Await the report to be ready
-                                def ready = false;
-                                while(status == false) {
+                                def processing = true;
+                                while(processing) {
                                     def (httpCode, parsedBody) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
-                                    def status = parsedBody["processing"]
-                                    if (status == "true") {
-                                        sleep(time: 5000, unit: "MILLISECONDS")
-                                    } else {
-                                        ready = true
+                                    processing = parsedBody["processing"]
+                                    if (processing) {
+                                        sleep(time: 5, unit: "SECONDS")
                                     }
                                 }
 

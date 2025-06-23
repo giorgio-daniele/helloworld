@@ -92,7 +92,7 @@ pipeline {
                             -F "project=${projUUID}"                   \\
                             -F "autocreate=true"                       \\
                             -F "bom=@${sbomPath}" > res.dat
-                        echo res.dat
+                        cat res.dat
                     """
                 }
             }

@@ -7,9 +7,9 @@ pipeline {
 
     environment {
         API_URL      = "http://dtrack-backend:8080/api/v1/bom"
+        API_KEY      = credentials("dtrack-backend-token")
         SBOM_PATH    = "target/bom.xml"
         PROJECT_UUID = "e4368795-5409-4b60-bb9d-d448732becb0"
-        API_KEY      = credentials("dtrack-backend-token")
     }
 
     stages {
@@ -26,11 +26,12 @@ pipeline {
             }
         }
 
+        /*
         stage("Test Report") {
             steps {
                 junit "target/surefire-reports/*.xml"
             }
-        }
+        }*/
 
         /*
         stage("Static Analysis - SonarQube") {
@@ -58,8 +59,8 @@ pipeline {
         stage("SBOM Upload") {
             steps {
                 script {
+                    
                     try {
-
                         sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
                         withEnv([
                             "URL=${env.API_URL}",
@@ -83,10 +84,13 @@ pipeline {
                             error "Dependency Track POST failed with code: ${code}"
                         }
 
-                        def body       = readFile('http.body').trim()
-                        def parsedBody = readJSON(text: body)
-                        def token      = parsedBody["token"]
-                        echo "Dependency Track Token: ${token}"
+                        def body = readFile('http.body').trim()
+                        echo "Response body: ${body}"
+
+                        //def body       = readFile('http.body').trim()
+                        //def parsedBody = readJSON(text: body)
+                        //def token      = parsedBody["token"]
+                        //echo "Dependency Track Token: ${token}"
 
                     } catch (err) {
                         error "SBOM upload failed: ${err.getMessage()}"

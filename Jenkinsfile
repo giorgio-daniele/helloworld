@@ -86,7 +86,8 @@ pipeline {
 
                     def res = sh (
                         script: """
-                            curl -sS -f -X POST ${apiURL}                  \\
+                            #!/bin/bash
+                            curl -X POST ${apiURL}                         \\
                                     -H "X-Api-Key: ${apiKey}"              \\
                                     -H "Content-Type: multipart/form-data" \\
                                     -F "project=${projUUID}"               \\

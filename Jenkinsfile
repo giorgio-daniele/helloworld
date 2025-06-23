@@ -3,9 +3,7 @@ def token = null
 def postSBOM(api, key, uid, bomPath) {
     def res = sh(
         script: """
-            curl -s                                     \\
-                -w '%{http_code}\\n'                    \\
-                -X POST "$api"                          \\
+            curl -s -w '%{http_code}\\n' -X POST "$api" \\
                 -H "X-Api-Key: $key"                    \\
                 -H "Content-Type: multipart/form-data"  \\
                 -F "project=$uid"                       \\
@@ -24,13 +22,10 @@ def postSBOM(api, key, uid, bomPath) {
 def getFindings(api, key, uid) {
     def res = sh(
         script: """
-            curl -s                                 \\
-                -w '%{http_code}\\n'                \\
-                -X GET "$api/$uid"                  \\
-                -H "X-Api-Key: $key"                \\
-                -H "accept: application/json"
-            """, 
-            returnStdout: true).trim()
+            curl -s -w '%{http_code}\\n' -X GET "$api/$uid" \\
+            -H "X-Api-Key: $key"                            \\
+            -H "accept: application/json"
+            """, returnStdout: true).trim()
 
     // Seperate code and body
     def lines      = res.readLines()
@@ -119,7 +114,7 @@ pipeline {
                 script {
                     // GET the findings
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                        withEnv(["API=http://dtrack-backend:8080/api/v1/findings/project", "UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
+                        withEnv(["API=http://dtrack-backend:8080/api/v1/finding/project", "UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
                             def (httpCode, parsedBody) = getFindings(env.API, env.KEY, env.UID)
                             echo "${httpCode} ${parsedBody}"
                         }

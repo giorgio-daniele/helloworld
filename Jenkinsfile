@@ -61,9 +61,10 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Genera l'SBOM
+                        // Generate the SBOM
                         sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
 
+                        // Post the SBOM
                         withCredentials([string(credentialsId: "dtrack-backend-token", variable: "API_KEY")]) {
                             def res = sh(
                                 script: '''
@@ -80,6 +81,16 @@ pipeline {
                                     PROJECT_UUID: "e4368795-5409-4b60-bb9d-d448732becb0",
                                     SBOM_PATH:    "target/bom.xml"
                                 ]).trim()
+
+                            // Parsing della risposta
+                            def lines    = response.readLines()
+                            def httpCode = lines[-1] as Integer
+                            def body     = lines.init().join("\n")
+
+                            if (httpCode < 200 || httpCode >= 300) {
+                                error "SBOM upload failed. HTTP ${httpCode}: ${body}"
+                            }
+                            echo "SBOM uploaded successfully. Response body:\n${body}"
                         }
                     } catch (err) {
                         error "SBOM upload failed: ${err.getMessage()}"

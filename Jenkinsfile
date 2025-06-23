@@ -98,7 +98,8 @@ pipeline {
                         )
 
                         /* Analyze the returing value and the body */
-                        echo "${res}"
+                        echo "Curl command exit status: ${res.status}"
+                        echo "Curl command stdout: ${res.stdout}"
                 }
             }
         }

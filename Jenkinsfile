@@ -83,16 +83,16 @@ pipeline {
                     def projVers = "1.0"
 
                     withEnv([
-                        "DTRACK_URL=${dtrackUrl}",
-                        "DTRACK_KEY=${apiKey}",
+                        "API_URL=${apiURL}",
+                        "API_KEY=${apiKey}",
                         "SBOM_PATH=${sbomPath}",
-                        "PROJECT_UUID=${projectUUID}"
+                        "PROJ_UUID=${projUUID}"
                     ]) {
                         sh '''
-                            curl -X POST "$DTRACK_URL"                         \
-                                -H "X-Api-Key: $DTRACK_KEY"                    \
+                            curl -X POST "$API_URL"                            \
+                                -H "X-Api-Key: $API_KEY"                       \
                                 -H "Content-Type: multipart/form-data"         \
-                                -F "project=$PROJECT_UUID"                     \
+                                -F "project=$PROJ_UUID"                        \
                                 -F "autocreate=true"                           \
                                 -F "bom=@$SBOM_PATH" > http.body 2>&1
                             echo $? > http.code

@@ -33,11 +33,12 @@ def getFindings(api, key, uid) {
             returnStdout: true).trim()
 
     // Seperate code and body
-      def lines      = res.readLines()
-      def httpCode   = lines[-1]
-      def body       = lines.size() > 1 ? lines[0..-2].join('\n') : ''
-      def parsedBody = body ? readJSON(text: body) : null
-      return [httpCode, parsedBody]
+    def lines      = res.readLines()
+    echo "${lines}"
+    // def httpCode   = lines[-1]
+    // def body       = lines.size() > 1 ? lines[0..-2].join('\n') : ''
+    // def parsedBody = body ? readJSON(text: body) : null
+    return [null, null]
 }
 
 
@@ -61,7 +62,7 @@ pipeline {
             }
         }
 
-
+        /*
         stage("Test Report") {
             steps {
                 junit "target/surefire-reports/*.xml"
@@ -88,7 +89,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
         stage("SBOM Creation") {
             steps {

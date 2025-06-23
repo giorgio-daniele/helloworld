@@ -9,7 +9,7 @@ pipeline {
         API_URL      = "http://dtrack-backend:8080/api/v1/bom"
         SBOM_PATH    = "target/bom.xml"
         PROJECT_UUID = "e4368795-5409-4b60-bb9d-d448732becb0"
-        API_KEY      = credentials('DependencyTrackApiKey')
+        API_KEY      = credentials("dtrack-backend-token")
     }
 
     stages {

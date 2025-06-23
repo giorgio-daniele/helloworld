@@ -1,5 +1,3 @@
-// Jenkinsfile configuration for a pipeline
-
 pipeline {
     agent any
 
@@ -7,122 +5,92 @@ pipeline {
         maven "Maven"
     }
 
+    environment {
+        API_URL      = "http://dtrack-backend:8080/api/v1/bom"
+        SBOM_PATH    = "target/bom.xml"
+        PROJECT_UUID = "e4368795-5409-4b60-bb9d-d448732becb0"
+        API_KEY      = credentials('DependencyTrackApiKey')
+    }
+
     stages {
 
-        // Checkout the code
         stage("Checkout") {
             steps {
                 checkout scm
             }
         }
 
-        // Clean and verify the project
-        stage("Clean") {
+        stage("Build and Verify") {
             steps {
                 sh "mvn clean verify"
             }
         }
 
-        // Build the project
-        stage("Build") {
+        stage("Test Report") {
             steps {
-                sh "mvn compile"
+                junit "target/surefire-reports/*.xml"
             }
         }
 
-        // Test the project
-        /* stage("Test") {
+        /*
+        stage("Static Analysis - SonarQube") {
             steps {
-                sh "mvn test"
-            }
-            post {
-                always {
-                    junit "target/surefire-reports/*.xml"
-                }
-            }
-        }*/
-
-        // Static Application Security Testing (SAST) using SonarScanner
-        /*stage("SonarScanner") {
-            steps {
-                // Inject SonarQube configuration (URL and token)
-                // "SonarQubeServer" is the name of the configured server in:
-                // "Manage Jenkins" -> "Configure System" -> "SonarQube servers"
                 withSonarQubeEnv("SonarQubeServer") {
                     sh "mvn sonar:sonar"
                 }
             }
-        }*/
+        }
 
-        // Quality Gate check from SonarQube server
-        /*stage("SonarQube Quality Gate") {
+        stage("Quality Gate") {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     script {
                         def qg = waitForQualityGate()
-                        if (qg.status != "OK") {
-                            error "Pipeline aborted due to quality gate failure"
+                        if (qg.status != 'OK') {
+                            error "Quality Gate failed: ${qg.status}"
                         }
                     }
                 }
             }
-        }*/
+        }
+        */
 
-        stage("Depedency-Track") {
+        stage("SBOM Upload") {
             steps {
-
                 script {
-
-                    def apiURL   = "http://dtrack-backend:8080/api/v1"
-                    def apiKey   = "odt_jnSed9yc_yLqy3n2NdVmBdAIIeMPFPAeerZWotCms"
-                    def sbomPath = "target/bom.xml"
-                    def projUUID = "e4368795-5409-4b60-bb9d-d448732becb0"
-
-                    // Generate the SBOM
-                    sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
-
                     try {
-                        // POST it to Dependency track
-                        withEnv(["URL=${apiURL}/bom", "KEY=${apiKey}", "BOM=${sbomPath}", "UID=${projUUID}"]) {
+
+                        sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
+                        withEnv([
+                            "URL=${env.API_URL}",
+                            "KEY=${env.API_KEY}",
+                            "BOM=${env.SBOM_PATH}",
+                            "UID=${env.PROJECT_UUID}"
+                        ]) {
                             sh """
-                                curl -s -X POST     "\$URL"                     \\
-                                    -H "X-Api-Key:   \$KEY"                     \\
-                                    -H "Content-Type: multipart/form-data"      \\
-                                    -F "project=\$UID"                          \\
-                                    -F "autocreate=true"                        \\
+                                curl -s -X POST    "\$URL"                 \\
+                                    -H "X-Api-Key:  \$KEY"                 \\
+                                    -H "Content-Type: multipart/form-data" \\
+                                    -F "project=\$UID"                     \\
+                                    -F "autocreate=true"                   \\
                                     -F "bom=@\$BOM" > http.body
                                 echo \$? > http.code
                             """
                         }
-                    } catch (Exception e) {
-                        error "Something bad happened on posting!"
-                    }
 
-                    // Inspect the temporary files
-                    def code = readFile('http.code').trim().toInteger()
-                    echo "Code = ${code}"
-
-                    // Read the body (JSON)
-                    def body        = readFile('http.body').trim()
-                    def parsedBody  = readJSON(text: body)
-                    def token       = parsedBody["token"]
-                    echo "Token = ${token}"
-
-                    try {
-                        // GET the list of findings
-                        withEnv(["URL=${apiURL}finding/project/${projUUID}", "KEY=${apiKey}"]) {
-                            sh """
-                                curl -s -X GET      "\$URL"                     \\
-                                    -H "X-Api-Key:   \$KEY"                     \\
-                                    -H "accept: application/json" > http.body
-                                echo \$? > http.code
-                            """
+                        def code = readFile('http.code').trim().toInteger()
+                        if (code != 0) {
+                            error "Dependency Track POST failed with code: ${code}"
                         }
-                    } catch (Exception e) {
-                        error "Something bad happened on getting findings!"
+
+                        def body       = readFile('http.body').trim()
+                        def parsedBody = readJSON(text: body)
+                        def token      = parsedBody["token"]
+                        echo "Dependency Track Token: ${token}"
+
+                    } catch (err) {
+                        error "SBOM upload failed: ${err.getMessage()}"
                     }
-
-
                 }
             }
         }

@@ -86,21 +86,21 @@ pipeline {
                     def res = sh(
                         script: """
                         #!/bin/bash
-
-                        # POST the SBOM over the API server and save the
-                        # answer on a file
-                        curl -X POST ${apiURL}                         \\
-                            -H "X-Api-Key: ${apiKey}"                  \\
-                            -H "Content-Type: multipart/form-data"     \\
-                            -F "project=${projUUID}"                   \\
-                            -F "autocreate=true"                       \\
-                            -F "bom=@${sbomPath}" > res.dat
-
-                        # Save also the return value of the comand itself
-                        echo $? >> res.dat
-                        cat res.dat
+                        curl -X POST "${apiURL}"                   \
+                            -H "X-Api-Key: ${apiKey}"              \
+                            -H "Content-Type: multipart/form-data" \
+                            -F "project=${projUUID}"               \
+                            -F "autocreate=true"                   \
+                            -F "bom=@${sbomPath}" > http.body
+                        echo $? > http.code
                         """
                     )
+
+                    def body = readFile('http.body').trim()
+                    def code = readFile('http.code').trim().toInteger()
+
+                    echo "Body:\n${bodu}"
+                    echo "Code:\n${code}"
                 }
             }
         }

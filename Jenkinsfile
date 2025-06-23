@@ -1,35 +1,37 @@
-/* Jenkins file configurationg for a pipeline */
+// Jenkinsfile configuration for a pipeline
 
-pipeline{
+pipeline {
     agent any
+
     tools {
         maven "Maven"
     }
-    stages{
-        
-        // Checkout che code
-        stage("Checkout"){
+
+    stages {
+
+        // Checkout the code
+        stage("Checkout") {
             steps {
                 checkout scm
             }
         }
 
-        // Clean the project
-        stage("Clean"){
+        // Clean and verify the project
+        stage("Clean") {
             steps {
                 sh "mvn clean verify"
             }
         }
 
         // Build the project
-        stage("Build"){
+        stage("Build") {
             steps {
                 sh "mvn compile"
             }
         }
 
         // Test the project
-        stage("Test"){
+        stage("Test") {
             steps {
                 sh "mvn test"
             }
@@ -39,13 +41,12 @@ pipeline{
                 }
             }
         }
-        
-        // Static Application Security Testing - SAST
-        stage("SonarScanner"){
+
+        // Static Application Security Testing (SAST) using SonarScanner
+        stage("SonarScanner") {
             steps {
-                // Inject SonarQube configuration - the URL and the token
-                // "SonarQubeServer" is the name of the configuration you
-                // find browsing at:
+                // Inject SonarQube configuration (URL and token)
+                // "SonarQubeServer" is the name of the configured server in:
                 // "Manage Jenkins" -> "Configure System" -> "SonarQube servers"
                 withSonarQubeEnv("SonarQubeServer") {
                     sh "mvn sonar:sonar"
@@ -53,16 +54,16 @@ pipeline{
             }
         }
 
-        // Quality Gate - from SonarQube server
-        stage("SonarQube"){
+        // Quality Gate check from SonarQube server
+        stage("SonarQube Quality Gate") {
             steps {
-                timeout(time: 5, unit: "MINUTES") {
-                def qg = waitForQualityGate()
-                echo qg
-                if (qg.status != "OK") {
-                    error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                timeout(time: 5, unit: 'MINUTES') {
+                    def qg = waitForQualityGate()
+                    echo "SonarQube Quality Gate status: ${qg.status}"
+                    if (qg.status != "OK") {
+                        error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                    }
                 }
-            }
             }
         }
     }

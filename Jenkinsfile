@@ -95,8 +95,9 @@ pipeline {
                             -F "project=${projUUID}"                   \\
                             -F "autocreate=true"                       \\
                             -F "bom=@${sbomPath}" > res.dat
+
                         # Save also the return value of the comand itself
-                        echo \$? >> curl_status.txt
+                        echo $? >> res.dat
                         cat res.dat
                         """
                     )

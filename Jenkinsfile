@@ -68,6 +68,7 @@ pipeline {
                         withCredentials([string(credentialsId: "dtrack-backend-token", variable: "API_KEY")]) {
                             def res = sh(
                                 script: '''
+                                    echo "API_KEY length: ${API_KEY.length()}"
                                     curl -s -w '%{http_code}\n' -X POST "$API_URL" \
                                     -H "X-Api-Key:   $API_KEY"                     \
                                     -H "Content-Type: multipart/form-data"         \

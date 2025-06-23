@@ -135,8 +135,8 @@ pipeline {
                             // Await the report to be ready
                             while(status == false) {
                                 def (httpCode, parsedBody) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
-                                sleep(time: 1000, unit: "MILLISECONDS")
                                 echo "${parsedBody}"
+                                sleep(time: 1000, unit: "MILLISECONDS")
                             }
 
                             //def (httpCode, parsedBody) = getFindings("${BASE_API}/finding/project/${env.UID}", env.KEY)

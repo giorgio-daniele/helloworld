@@ -59,9 +59,9 @@ pipeline {
         stage("SBOM Upload") {
             steps {
                 script {
-                    
                     try {
                         sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
+                        sh 'ls -lh target/bom.xml || echo "BOM file missing!"'
                         withEnv([
                             "URL=${env.API_URL}",
                             "KEY=${env.API_KEY}",

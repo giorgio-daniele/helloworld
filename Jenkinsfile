@@ -101,10 +101,9 @@ pipeline {
                         '''
                     }
 
-                    def jsonSlurper = new JsonSlurper()
                     def body        = readFile('http.body').trim()
-                    def parsedBody  = jsonSlurper.parseText(body)
-                    def token       = parsedBody.token
+                    def parsedBody  = readJSON(text: body)
+                    def token       = parsedBody["token"]
                     def code        = readFile('http.code').trim().toInteger()
 
                     echo "Token: \n${token}"

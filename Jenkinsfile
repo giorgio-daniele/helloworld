@@ -82,15 +82,8 @@ pipeline {
                                     SBOM_PATH:    "target/bom.xml"
                                 ]).trim()
 
-                            // Parsing della risposta
-                            def lines    = res.readLines()
-                            def httpCode = lines[-1] as Integer
-                            def body     = lines.init().join("\n")
-
-                            if (httpCode < 200 || httpCode >= 300) {
-                                error "SBOM upload failed. HTTP ${httpCode}: ${body}"
-                            }
-                            echo "SBOM uploaded successfully. Response body:\n${body}"
+                            // Parse the reply
+                            echo "${res}"
                         }
                     } catch (err) {
                         error "SBOM upload failed: ${err.getMessage()}"

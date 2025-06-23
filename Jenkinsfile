@@ -82,20 +82,27 @@ pipeline {
                     def projUUID = "e4368795-5409-4b60-bb9d-d448732becb0"
                     def projVers = "1.0"
 
-                    /* Use HTTP to request the API server to process the SBOM */
-                    sh """
-                        curl -X POST "${dtrackUrl}"                    \\
-                                -H "X-Api-Key: ${DTRACK_API_KEY}"      \\
-                                -H "Content-Type: multipart/form-data" \\
-                                -F "project=${projectUUID}"            \\
-                                -F "autocreate=true"                   \\
-                                -F "bom=@${sbomPath}" > http.res && echo $? > http.code 
-                    """
+                    withEnv([
+                        "DTRACK_URL=${dtrackUrl}",
+                        "DTRACK_KEY=${apiKey}",
+                        "SBOM_PATH=${sbomPath}",
+                        "PROJECT_UUID=${projectUUID}"
+                    ]) {
+                        sh '''
+                            curl -X POST "$DTRACK_URL"                         \
+                                -H "X-Api-Key: $DTRACK_KEY"                    \
+                                -H "Content-Type: multipart/form-data"         \
+                                -F "project=$PROJECT_UUID"                     \
+                                -F "autocreate=true"                           \
+                                -F "bom=@$SBOM_PATH" > http.body 2>&1
+                            echo $? > http.code
+                        '''
+                    }
 
                     def body = readFile('http.body').trim()
                     def code = readFile('http.code').trim().toInteger()
 
-                    echo "Body:\n${bodu}"
+                    echo "Body:\n${body}"
                     echo "Code:\n${code}"
                 }
             }

@@ -121,7 +121,7 @@ pipeline {
                                     script: '''
                                         curl                                    \
                                         -s -w '%{http_code}\n'                  \
-                                        -X  POST "$API/$UID"                    \
+                                        -X  GET "$API/$UID"                     \
                                         -H "X-Api-Key: $KEY"                    \
                                         -H "accept: application/json"
                                     ''', returnStdout: true).trim()
@@ -131,7 +131,7 @@ pipeline {
                             }
                         }
                     } catch (err) {
-                        error "SBOM upload failed: ${err.getMessage()}"
+                        error "SBOM findings failed: ${err.getMessage()}"
                     }
                 }
             }

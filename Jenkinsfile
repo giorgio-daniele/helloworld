@@ -98,28 +98,15 @@ pipeline {
                         error "Something bad happened!"
                     }
 
+                    // Inspect the temporary files
+                    def code = readFile('http.code').trim().toInteger()
+                    echo "Code = ${code}"
 
-                    /* Define the parameters to use in the CURL operation */
-
-                    /* Define the context for the shell execution */
-
-
-
-                    
-                    // Read the code of the command "curl" that has been executed
-                    // def code = readFile('http.code').trim().toInteger()
-
-
-                    // echo "${code}"
-                    /* To read a JSON dictionary, use a plugin called pipeline-utility-plugin */
-
-                    // def body        = readFile('http.body').trim()
-                    // def parsedBody  = readJSON(text: body)
-                    // def token       = parsedBody["token"]
-                    // def code        = readFile('http.code').trim().toInteger()
-
-                    // echo "Token: \n${token}"
-                    // echo "Code:  \n${code}"
+                    // Read the body (JSON)
+                    def body        = readFile('http.body').trim()
+                    def parsedBody  = readJSON(text: body)
+                    def token       = parsedBody["token"]
+                    echo "Token = ${token}"
                 }
             }
         }

@@ -68,11 +68,11 @@ pipeline {
                         withCredentials([string(credentialsId: "dtrack-backend-token", variable: "API_KEY")]) {
                             def res = sh(
                                 script: '''
-                                    curl -s -X POST "$API_URL"              \
-                                    -H "X-Api-Key:   $API_KEY"              \
-                                    -H "Content-Type: multipart/form-data"  \
-                                    -F "project=$PROJECT_UUID"              \
-                                    -F "autocreate=true"                    \
+                                    curl -s -w '%{http_code}\n' -X POST "$API_URL" \
+                                    -H "X-Api-Key:   $API_KEY"                     \
+                                    -H "Content-Type: multipart/form-data"         \
+                                    -F "project=$PROJECT_UUID"                     \
+                                    -F "autocreate=true"                           \
                                     -F "bom=@$SBOM_PATH"
                                 ''',
                                 returnStdout: true,
@@ -83,7 +83,7 @@ pipeline {
                                 ]).trim()
 
                             // Parsing della risposta
-                            def lines    = response.readLines()
+                            def lines    = res.readLines()
                             def httpCode = lines[-1] as Integer
                             def body     = lines.init().join("\n")
 

@@ -61,17 +61,14 @@ pipeline {
             }
         }
 
-        // Abilita questo stage se vuoi includere i test report
-        /*
+
         stage("Test Report") {
             steps {
                 junit "target/surefire-reports/*.xml"
             }
         }
-        */
 
-        // Se vuoi usare SonarQube:
-        /*
+
         stage("Static Analysis - SonarQube") {
             steps {
                 withSonarQubeEnv("SonarQubeServer") {
@@ -80,7 +77,7 @@ pipeline {
             }
         }
 
-        stage("Quality Gate") {
+        stage("Quality Gate - SonarQube" ) {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     script {
@@ -92,7 +89,6 @@ pipeline {
                 }
             }
         }
-        */
 
         stage("SBOM Creation") {
             steps {
@@ -124,9 +120,7 @@ pipeline {
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                         withEnv(["API=http://dtrack-backend:8080/api/v1/findings/project", "UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
                             def (httpCode, parsedBody) = getFindings(env.API, env.KEY, env.UID)
-                            /*echo "HTTP Code: ${httpCode}"
-                            echo "Token: ${parsedBody.token}"
-                            token = parsedBody.token*/
+                            echo "${httpCode} ${parsedBody}"
                         }
                     }
                 }

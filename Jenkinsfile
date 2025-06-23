@@ -34,6 +34,21 @@ def getFindings(api, key, uid) {
     return [httpCode, parsedBody]
 }
 
+def getStatus(api, key, uid) {
+    def res = sh(
+        script: """
+            curl -s -w '%{http_code}\\n' -X GET "$api/$uid" \\
+            -H "X-Api-Key: $key"                            \\
+            -H "accept: application/json"
+            """, returnStdout: true).trim()
+
+    // Seperate code and body
+    def httpCode   = res[-3..-1]
+    def body       = res[0..-4]
+    def parsedBody = readJSON(text: body)
+    return [httpCode, parsedBody]
+}
+
 
 pipeline {
     agent any
@@ -94,9 +109,10 @@ pipeline {
         stage("SBOM Upload") {
             steps {
                 script {
+                    def BASE_API = "http://dtrack-backend:8080/api/v1"
                     // POST the SBOM
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                        withEnv(["API=http://dtrack-backend:8080/api/v1/bom", "UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {
+                        withEnv(["API=${BASE_API}/bom", "UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {
                             def (httpCode, parsedBody) = postSBOM(env.API, env.KEY, env.UID, env.BOM)
                             echo "HTTP Code: ${httpCode}"
                             echo "Token: ${parsedBody.token}"
@@ -110,9 +126,10 @@ pipeline {
         stage("SBOM Findings") {
             steps {
                 script {
+                    def BASE_API = "http://dtrack-backend:8080/api/v1"
                     // GET the findings
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                        withEnv(["API=http://dtrack-backend:8080/api/v1/finding/project", "UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
+                        withEnv(["API=${BASE_API}/finding/project", "UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
                             def (httpCode, parsedBody) = getFindings(env.API, env.KEY, env.UID)
                             echo "${httpCode} ${parsedBody}"
                         }

@@ -72,33 +72,30 @@ pipeline {
             steps {
 
                 script {
-                    try {
 
-                        // Define the parameters that are going to be used
-                        def apiURL   = "http://dtrack-backend:8080/api/v1/bom"
-                        def apiKey   = "odt_jnSed9yc_yLqy3n2NdVmBdAIIeMPFPAeerZWotCms"
-                        def sbomPath = "target/bom.xml"
-                        def projName = "helloworld"
-                        def projUUID = "e4368795-5409-4b60-bb9d-d448732becb0"
-                        def projVers = "1.0"
-                        
-                        // Create the SBOM (Software Bills of Material) and post it to Dependency Track
+                    def apiURL   = "http://dtrack-backend:8080/api/v1/bom"
+                    def apiKey   = "odt_jnSed9yc_yLqy3n2NdVmBdAIIeMPFPAeerZWotCms"
+                    def sbomPath = "target/bom.xml"
+                    def projUUID = "e4368795-5409-4b60-bb9d-d448732becb0"
+
+                    try {
                         withEnv(["URL=${apiURL}", "KEY=${apiKey}", "BOM=${sbomPath}", "UID=${projUUID}"]) {
-                                sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
-                                sh '''
-                                    curl -s -X POST "$URL"                         \
-                                        -H "X-Api-Key:   $KEY"                     \
-                                        -H "Content-Type: multipart/form-data"     \
-                                        -F "project=$UID"                          \
-                                        -F "autocreate=true"                       \
-                                        -F "bom=@$BOM" > http.body
-                                    echo $? > http.code
-                                '''
-                            }
+                            sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
+                            sh """
+                                curl -s -X POST     "\$URL"                     \\
+                                    -H "X-Api-Key:   \$KEY"                     \\
+                                    -H "Content-Type: multipart/form-data"     \\
+                                    -F "project=\$UID"                          \\
+                                    -F "autocreate=true"                       \\
+                                    -F "bom=@\$BOM" > http.body
+                                echo \$? > http.code
+                            """
+                        }
+                    } catch (Exception e) {
+                        echo "${e.getMessage()}"
                     }
-                    catch (exception) {
-                        error "${exception}"
-                    }
+
+
                     /* Define the parameters to use in the CURL operation */
 
                     /* Define the context for the shell execution */

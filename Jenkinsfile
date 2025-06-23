@@ -67,17 +67,19 @@ pipeline {
                         // Post the SBOM
                         withCredentials([string(credentialsId: "dtrack-backend-token", variable: "API_KEY")]) {
                             withEnv([
-                                "API_URL=http://dtrack-backend:8080/api/v1/bom",
-                                "PROJECT_UUID=e4368795-5409-4b60-bb9d-d448732becb0",
-                                "SBOM_PATH=target/bom.xml"
+                                "URL=http://dtrack-backend:8080/api/v1/bom",
+                                "UID=e4368795-5409-4b60-bb9d-d448732becb0",
+                                "BOM=target/bom.xml"
                             ]) {
                                 def res = sh(
                                     script: '''
-                                        curl -s -w '%{http_code}\n' -X POST "$API_URL" \
-                                        -H "X-Api-Key: $API_KEY" \
-                                        -H "Content-Type: multipart/form-data" \
-                                        -F "project=$PROJECT_UUID" \
-                                        -F "autocreate=true" \
+                                        curl                                    \
+                                        -s -w '%{http_code}\n'                  \
+                                        -X  POST      "$API"                    \
+                                        -H "X-Api-Key: $KEY"                    \
+                                        -H "Content-Type: multipart/form-data"  \
+                                        -F "project=$UID"                       \
+                                        -F "autocreate=true"                    \
                                         -F "bom=@$SBOM_PATH"
                                     ''',
                                     returnStdout: true

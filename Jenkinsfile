@@ -116,9 +116,7 @@ pipeline {
                             
                             try {
                                 def (httpCode, parsedBody) = postSBOM("${BASE_API}/bom", env.KEY, env.UID, env.BOM)
-                                echo "HTTP Code: ${httpCode}"
-                                echo "Token: ${parsedBody.token}"
-                                token = parsedBody.token
+                                writeFile(file: "token.data", text: parsedBody.token)
                             } catch (Exception  e) {
                                 error "${e}"
                             }
@@ -138,6 +136,7 @@ pipeline {
                         withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
                             
                             try {
+
                                 // Await the report to be ready
                                 def proc = true;
                                 while(proc) {
@@ -150,7 +149,7 @@ pipeline {
 
                                 // Get the findings
                                 def (httpCode, parsedBody) = getFindings("${BASE_API}/finding/project/${env.UID}", env.KEY)
-                                echo "${httpCode} ${parsedBody}"
+                                echo "${parsedBody}"
                             } catch (Exception  e) {
                                 error "${e}"
                             }

@@ -39,7 +39,7 @@ def getStatus(api, key) {
         script: """
             curl -s -w '%{http_code}\\n' -X GET "$api"      \\
             -H "X-Api-Key: $key"                            \\
-            -H "accept: application/json"
+            -H "Accept: application/json"
             """, returnStdout: true).trim()
 
     // Seperate code and body
@@ -70,7 +70,7 @@ pipeline {
             }
         }
 
-        /*
+    
         stage("Test Report") {
             steps {
                 junit "target/surefire-reports/*.xml"
@@ -97,7 +97,7 @@ pipeline {
                     }
                 }
             }
-        }*/
+        }
 
         stage("SBOM Creation") {
             steps {
@@ -139,11 +139,11 @@ pipeline {
                             
                             try {
                                 // Await the report to be ready
-                                def processing = true;
-                                while(processing) {
+                                def proc = true;
+                                while(proc) {
                                     def (httpCode, parsedBody) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
-                                    processing = parsedBody["processing"]
-                                    if (processing) {
+                                    proc = parsedBody["proc"]
+                                    if (proc) {
                                         sleep(time: 5, unit: "SECONDS")
                                     }
                                 }

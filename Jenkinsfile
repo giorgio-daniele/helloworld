@@ -28,12 +28,10 @@ def getFindings(api, key, uid) {
             """, returnStdout: true).trim()
 
     // Seperate code and body
-    def lines      = res.readLines()
-    echo "${lines}"
-    // def httpCode   = lines[-1]
-    // def body       = lines.size() > 1 ? lines[0..-2].join('\n') : ''
-    // def parsedBody = body ? readJSON(text: body) : null
-    return [null, null]
+    def httpCode   = res[-3..-1]
+    def body       = res[0..-4]
+    def parsedBody = readJSON(text: body)
+    return [httpCode, parsedBody]
 }
 
 

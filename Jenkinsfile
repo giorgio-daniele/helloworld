@@ -121,7 +121,7 @@ pipeline {
                 script {
                     // GET the findings
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                        withEnv(["API=http://dtrack-backend:8080/api/v1/findings", "UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
+                        withEnv(["API=http://dtrack-backend:8080/api/v1/findings/project", "UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
                             def (httpCode, parsedBody) = getFindings(env.API, env.KEY, env.UID)
                             /*echo "HTTP Code: ${httpCode}"
                             echo "Token: ${parsedBody.token}"

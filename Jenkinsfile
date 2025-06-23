@@ -84,9 +84,7 @@ pipeline {
 
                     /* Use HTTP to request the API server to process the SBOM */
                     def res = sh(
-                        script: '''
-                        #!/bin/bash
-
+                        script: """
                         curl -X POST "${apiURL}"                    \
                             -H "X-Api-Key: ${apiKey}"               \
                             -H "Content-Type: multipart/form-data"  \
@@ -94,7 +92,7 @@ pipeline {
                             -F "autocreate=true"                    \
                             -F "bom=@${sbomPath}" > http.res
                         echo $? > http.code
-                        '''
+                        """
                     )
 
                     def body = readFile('http.body').trim()

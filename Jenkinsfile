@@ -98,9 +98,9 @@ pipeline {
                             returnStatus: true,
                         )
 
+
                         /* Analyze the returing value and the body */
-                        echo "Curl command exit status: ${res.exitStatus}"
-                        echo "Curl command stdout: ${res.stdout}"
+                        echo res
                 }
             }
         }

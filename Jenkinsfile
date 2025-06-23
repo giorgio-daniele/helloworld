@@ -1,3 +1,8 @@
+def httpCode   = null
+def body       = null
+def parsedBody = null
+def token      = null
+
 pipeline {
     agent any
 
@@ -51,13 +56,17 @@ pipeline {
         }
         */
 
+        stage("SBOM") {
+            steps {
+                // Generate the SBOM
+                sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
+            }
+        }
+
         stage("SBOM Upload") {
             steps {
                 script {
                     try {
-                        // Generate the SBOM
-                        sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
-
                         // Post the SBOM
                         withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                             withEnv([
@@ -65,7 +74,8 @@ pipeline {
                                 "UID=e4368795-5409-4b60-bb9d-d448732becb0",
                                 "BOM=target/bom.xml"
                             ]) {
-                                // echo "API_KEY length: ${KEY.length()}"
+
+                                // Run HTTP
                                 def res = sh(
                                     script: '''
                                         curl                                    \
@@ -77,14 +87,15 @@ pipeline {
                                         -F "autocreate=true"                    \
                                         -F "bom=@$BOM"
                                     ''', returnStdout: true).trim()
+
                                 // Separate body and HTTP code
-                                def httpCode   = res[-3..-1]
-                                def body       = res[0..-4]
-                                def parsedBody = readJSON(text: body)
-                                def token      = parsedBody["token"]
+                                httpCode   = res[-3..-1]
+                                body       = res[0..-4]
+                                parsedBody = readJSON(text: body)
+                                token      = parsedBody["token"]
 
                                 echo "HTTP Code: ${httpCode}"
-                                echo "Token:     ${token}"
+                                echo "Token: ${token}"
                             }
                         }
                     } catch (err) {
@@ -93,5 +104,38 @@ pipeline {
                 }
             }
         }
+
+        stage("SBOM Findings") {
+            steps {
+                script {
+                    try {
+                        // GET findings associated to uploaded SBOM
+                        withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
+                            withEnv([
+                                "API=http://dtrack-backend:8080/api/v1/finding/project/",
+                                "UID=e4368795-5409-4b60-bb9d-d448732becb0",
+                            ]) {
+
+                                // Run HTTP
+                                def res = sh(
+                                    script: '''
+                                        curl                                    \
+                                        -s -w '%{http_code}\n'                  \
+                                        -X  POST "$API/$UID"                    \
+                                        -H "X-Api-Key: $KEY"                    \
+                                        -H "accept: application/json"
+                                    ''', returnStdout: true).trim()
+
+                                // Separate body and HTTP code
+                                echo "${res}"
+                            }
+                        }
+                    } catch (err) {
+                        error "SBOM upload failed: ${err.getMessage()}"
+                    }
+                }
+            }
+        }
+
     }
 }

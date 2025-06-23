@@ -130,11 +130,11 @@ pipeline {
                     def BASE_API = "http://dtrack-backend:8080/api/v1"
                     // GET the findings
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
-                        withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
+                        withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0", "TKN"=token]) {
 
                             // Await the report to be ready
                             while(status == false) {
-                                def (httpCode, parsedBody) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
+                                def (httpCode, parsedBody) = getStatus("${BASE_API}/bom/token/${env.TKN}", env.KEY)
                                 echo "${parsedBody}"
                                 sleep(time: 1000, unit: "MILLISECONDS")
                             }

@@ -65,7 +65,7 @@ pipeline {
                                 "UID=e4368795-5409-4b60-bb9d-d448732becb0",
                                 "BOM=target/bom.xml"
                             ]) {
-                                echo "API_KEY length: ${KEY.length()}"
+                                // echo "API_KEY length: ${KEY.length()}"
                                 def res = sh(
                                     script: '''
                                         curl                                    \
@@ -78,11 +78,13 @@ pipeline {
                                         -F "bom=@$BOM"
                                     ''', returnStdout: true).trim()
                                 // Separate body and HTTP code
-                                def httpCode = res[-3..-1]
-                                def body     = res[0..-4]
+                                def httpCode   = res[-3..-1]
+                                def body       = res[0..-4]
+                                def parsedBody = readJSON(text: body)
+                                def token      = parsedBody["token"]
 
                                 echo "HTTP Code: ${httpCode}"
-                                echo "Response Body: ${body}"
+                                echo "Token:     ${token}"
                             }
                         }
                     } catch (err) {

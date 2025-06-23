@@ -71,6 +71,22 @@ pipeline {
         stage("Depedency-Track") {
             steps {
                 sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
+                script {
+                    def apiURL   = "http://dtrack-apiserver:8080/api/v1/bom"
+                    def apiKey   = "odt_jnSed9yc_yLqy3n2NdVmBdAIIeMPFPAeerZWotCms"
+                    def sbomPath = "target/bom.xml"
+                    def projName = "helloworld"
+                    def projVers = "1.0"
+                    sh """
+                        curl -X POST          ${apiURL}"            \\
+                            -H "X-Api-Key:    ${apiKey}"            \\
+                            -H "Content-Type: multipart/form-data"  \\
+                            -F "projectName=${projName}"            \\
+                            -F "projectVersion=${projVers}"         \\
+                            -F "autocreate=true"                    \\
+                            -F "bom=@${sbomPath}"
+                        """
+                }
             }
         }
 

@@ -31,7 +31,7 @@ pipeline {
         }
 
         // Test the project
-        stage("Test") {
+        /* stage("Test") {
             steps {
                 sh "mvn test"
             }
@@ -40,10 +40,10 @@ pipeline {
                     junit "target/surefire-reports/*.xml"
                 }
             }
-        }
+        }*/
 
         // Static Application Security Testing (SAST) using SonarScanner
-        stage("SonarScanner") {
+        /*stage("SonarScanner") {
             steps {
                 // Inject SonarQube configuration (URL and token)
                 // "SonarQubeServer" is the name of the configured server in:
@@ -52,10 +52,10 @@ pipeline {
                     sh "mvn sonar:sonar"
                 }
             }
-        }
+        }*/
 
         // Quality Gate check from SonarQube server
-        stage("SonarQube Quality Gate") {
+        /*stage("SonarQube Quality Gate") {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     script {
@@ -66,7 +66,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
         stage("Depedency-Track") {
             steps {

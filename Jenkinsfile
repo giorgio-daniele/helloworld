@@ -5,7 +5,6 @@ pipeline {
     }
     environment {
         API_URL      = "http://dtrack-backend:8080/api/v1/bom"
-        API_KEY      = credentials("dtrack-backend-token")
         SBOM_PATH    = "target/bom.xml"
         PROJECT_UUID = "e4368795-5409-4b60-bb9d-d448732becb0"
     }
@@ -52,19 +51,18 @@ pipeline {
                 script {
                     try {
                         sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
-                        sh 'ls -lh target/bom.xml || echo "BOM file missing!"'
-                        
-                        // Use proper Groovy string interpolation instead of shell variables
-                        sh """
+                        withCredentials([string(credentialsId: "dtrack-backend-token", variable: "API_KEY")]) {
+                            sh """
                             curl -s -X POST    "${env.API_URL}"        \\
-                                -H "X-Api-Key:  ${env.API_KEY}"        \\
+                                -H "X-Api-Key:  ${API_KEY}"            \\
                                 -H "Content-Type: multipart/form-data" \\
                                 -F "project=${env.PROJECT_UUID}"       \\
                                 -F "autocreate=true"                   \\
                                 -F "bom=@${env.SBOM_PATH}"             \\
                                 -w "%{http_code}"                      \\
                                 -o http.body > http.code
-                        """
+                            """
+                        }
                         
                         // Read the HTTP status code properly
                         def httpCode = readFile('http.code').trim().toInteger()
@@ -88,8 +86,7 @@ pipeline {
                     } catch (Exception err) {
                         error "SBOM upload failed: ${err.getMessage()}"
                     } finally {
-                        // Clean up temporary files
-                        sh 'rm -f http.code http.body || true'
+                        sh "rm -f http.code http.body || true"
                     }
                 }
             }

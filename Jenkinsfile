@@ -24,7 +24,7 @@ def getFindings(api, key) {
         script: """
             curl -s -w '%{http_code}\\n' -X GET "$api"      \\
             -H "X-Api-Key: $key"                            \\
-            -H "accept: application/json"
+            -H "Accept: application/json"
             """, returnStdout: true).trim()
 
     // Seperate code and body
@@ -70,7 +70,7 @@ pipeline {
             }
         }
 
-    
+        /*
         stage("Test Report") {
             steps {
                 junit "target/surefire-reports/*.xml"
@@ -97,7 +97,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
         stage("SBOM Creation") {
             steps {

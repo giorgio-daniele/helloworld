@@ -72,7 +72,7 @@ pipeline {
             steps {
                 sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
                 script {
-                    def apiURL   = "http://dtrack-backend:8080/api/v1/bom"
+                    def apiURL   = "http://dtrack-backend:8081/api/v1/bom"
                     def apiKey   = "odt_jnSed9yc_yLqy3n2NdVmBdAIIeMPFPAeerZWotCms"
                     def sbomPath = "target/bom.xml"
                     def projName = "helloworld"

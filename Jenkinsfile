@@ -53,8 +53,9 @@ pipeline {
                         sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"
                         withCredentials([string(credentialsId: "dtrack-backend-token", variable: "API_KEY")]) {
                             sh """
+                            #!/bin/bash
                             curl -s -X POST    "${env.API_URL}"        \\
-                                -H "X-Api-Key:  ${API_KEY}"            \\
+                                -H "X-Api-Key: \${API_KEY}"            \\
                                 -H "Content-Type: multipart/form-data" \\
                                 -F "project=${env.PROJECT_UUID}"       \\
                                 -F "autocreate=true"                   \\

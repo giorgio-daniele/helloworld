@@ -56,14 +56,13 @@ pipeline{
         // Quality Gate - from SonarQube server
         stage("SonarQube"){
             steps {
-                script {
-                    try {
-                        waitForQualityGate abortPipeline: true, timeout: 300
-                    } catch (err) {
-                        error "EoP. Quality gate has failed"
+                timeout(time: 5, unit: "MINUTES") {
+                    def qg = waitForQualityGate()
+                    echo qg
+                    if (qg.status != "OK") {
+                        error "Pipeline aborted due to quality gate failure: ${qg.status}"
                     }
                 }
-            }
         }
     }
 }

@@ -112,7 +112,7 @@ pipeline {
                         // GET findings associated to uploaded SBOM
                         withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                             withEnv([
-                                "API=http://dtrack-backend:8080/api/v1/finding/project/",
+                                "API=http://dtrack-backend:8080/api/v1/finding/project",
                                 "UID=e4368795-5409-4b60-bb9d-d448732becb0",
                             ]) {
 

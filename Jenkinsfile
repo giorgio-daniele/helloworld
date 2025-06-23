@@ -77,7 +77,12 @@ pipeline {
                                         -F "autocreate=true"                    \
                                         -F "bom=@$BOM"
                                     ''', returnStdout: true).trim()
-                                echo "${res}"
+                                // Separate body and HTTP code
+                                def httpCode = res[-3..-1]
+                                def body     = res[0..-4]
+
+                                echo "HTTP Code: ${httpCode}"
+                                echo "Response Body: ${body}"
                             }
                         }
                     } catch (err) {

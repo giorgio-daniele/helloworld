@@ -78,7 +78,7 @@ pipeline {
                     def projName = "helloworld"
                     def projVers = "1.0"
                     sh """
-                        curl -X POST          ${apiURL}"            \\
+                        curl -X POST          ${apiURL}             \\
                             -H "X-Api-Key:    ${apiKey}"            \\
                             -H "Content-Type: multipart/form-data"  \\
                             -F "projectName=${projName}"            \\

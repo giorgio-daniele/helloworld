@@ -82,6 +82,8 @@ pipeline {
                     def projUUID = "e4368795-5409-4b60-bb9d-d448732becb0"
                     def projVers = "1.0"
 
+                    /* Define the context for the shell execution */
+
                     withEnv([
                         "API_URL=${apiURL}",
                         "API_KEY=${apiKey}",
@@ -89,7 +91,7 @@ pipeline {
                         "PROJ_UUID=${projUUID}"
                     ]) {
                         sh '''
-                            curl -X POST "$API_URL"                            \
+                            curl -s -X POST "$API_URL"                         \
                                 -H "X-Api-Key: $API_KEY"                       \
                                 -H "Content-Type: multipart/form-data"         \
                                 -F "project=$PROJ_UUID"                        \

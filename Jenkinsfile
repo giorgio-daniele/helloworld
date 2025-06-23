@@ -76,13 +76,13 @@ pipeline {
                     def apiKey   = "odt_jnSed9yc_yLqy3n2NdVmBdAIIeMPFPAeerZWotCms"
                     def sbomPath = "target/bom.xml"
                     def projName = "helloworld"
+                    def projUUID = "e4368795-5409-4b60-bb9d-d448732becb0"
                     def projVers = "1.0"
                     sh """
                         curl -X POST          ${apiURL}             \\
                             -H "X-Api-Key:    ${apiKey}"            \\
                             -H "Content-Type: multipart/form-data"  \\
-                            -F "projectName=${projName}"            \\
-                            -F "projectVersion=${projVers}"         \\
+                            -F "project=${projUUID}                 \\
                             -F "autocreate=true"                    \\
                             -F "bom=@${sbomPath}"
                         """

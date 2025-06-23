@@ -96,10 +96,9 @@ pipeline {
                             returnStdout: true,
                             returnStatus: true,
                         )
-                        def code = res.status
-                        def body = res.stdout.trim()
-                        echo "${code}"
-                        echo "${body}"
+
+                        /* Analyze the returing value and the body */
+                        echo "${res}"
                 }
             }
         }

@@ -33,10 +33,11 @@ def getFindings(api, key, uid) {
             returnStdout: true).trim()
 
     // Seperate code and body
-    def httpCode   = res[-3..-1]
-    def body       = res[0..-4]
-    def parsedBody = readJSON(text: body)
-    return [httpCode, parsedBody]
+      def lines      = res.readLines()
+      def httpCode   = lines[-1]
+      def body       = lines.size() > 1 ? lines[0..-2].join('\n') : ''
+      def parsedBody = body ? readJSON(text: body) : null
+      return [httpCode, parsedBody]
 }
 
 
@@ -93,7 +94,7 @@ pipeline {
         }
         */
 
-        stage("SBOM") {
+        stage("SBOM Creation") {
             steps {
                 // Generate the SBOM
                 sh "mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom"

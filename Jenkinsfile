@@ -65,11 +65,12 @@ pipeline {
                                 "UID=e4368795-5409-4b60-bb9d-d448732becb0",
                                 "BOM=target/bom.xml"
                             ]) {
+                                echo "API_KEY length: ${KEY.length()}"
                                 def res = sh(
                                     script: '''
                                         curl                                    \
                                         -s -w '%{http_code}\n'                  \
-                                        -X  POST      "$API"                    \
+                                        -X  POST "$API"                         \
                                         -H "X-Api-Key: $KEY"                    \
                                         -H "Content-Type: multipart/form-data"  \
                                         -F "project=$UID"                       \

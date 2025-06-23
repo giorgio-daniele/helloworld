@@ -135,7 +135,8 @@ pipeline {
                             def ready = false;
                             while(status == false) {
                                 def (httpCode, parsedBody) = getStatus("${BASE_API}/event/token/${env.UID}", env.KEY)
-                                if (parsedBody["processing"]) {
+                                def status = parsedBody["processing"]
+                                if (status == "true") {
                                     sleep(time: 5000, unit: "MILLISECONDS")
                                 } else {
                                     ready = true

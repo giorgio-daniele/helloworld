@@ -3,7 +3,7 @@ def token = null
 def postSBOM(api, key, uid, bomPath) {
     def res = sh(
         script: """
-            curl -s 
+            curl -s                                     \\
                 -w '%{http_code}\\n'                    \\
                 -X POST "$api"                          \\
                 -H "X-Api-Key: $key"                    \\
@@ -24,7 +24,7 @@ def postSBOM(api, key, uid, bomPath) {
 def getFindings(api, key, uid) {
     def res = sh(
         script: """
-            curl -s 
+            curl -s                                 \\
                 -w '%{http_code}\\n'                \\
                 -X GET "$api/$uid"                  \\
                 -H "X-Api-Key: $key"                \\

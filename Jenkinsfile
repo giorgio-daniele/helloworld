@@ -84,23 +84,16 @@ pipeline {
 
                     /* Use HTTP to request the API server to process the SBOM */
 
-                    def res = sh (
-                        script: """
-                            #!/bin/bash
-                            curl -X POST ${apiURL}                         \\
-                                    -H "X-Api-Key: ${apiKey}"              \\
-                                    -H "Content-Type: multipart/form-data" \\
-                                    -F "project=${projUUID}"               \\
-                                    -F "autocreate=true"                   \\
-                                    -F "bom=@${sbomPath}"
-                            """,
-                            returnStdout: true,
-                            returnStatus: true,
-                        )
-
-
-                        /* Analyze the returing value and the body */
-                        echo res
+                    sh """
+                        #!/bin/bash
+                        curl -X POST ${apiURL}                         \\
+                            -H "X-Api-Key: ${apiKey}"                  \\
+                            -H "Content-Type: multipart/form-data"     \\
+                            -F "project=${projUUID}"                   \\
+                            -F "autocreate=true"                       \\
+                            -F "bom=@${sbomPath}" > res.dat
+                        echo res.dat
+                    """
                 }
             }
         }

@@ -14,9 +14,8 @@ def postSBOM(api, key, uid, bomPath) {
 
     // Seperate code and body
     def code       = res[-3..-1]
-    def body       = res[0..-4]
-    def parsedBody = readJSON(text: body)
-    return [code, parsedBody]
+    def body       = res[0..-4].trim()
+    return [code, body]
 }
 
 def get(api, key) {
@@ -30,12 +29,7 @@ def get(api, key) {
     // Seperate code and body
     def code       = res[-3..-1]
     def body       = res[0..-4].trim()
-    def parsedBody = readJSON(text: body)
-
-    
-    echo "${body}"
-
-    return [code, parsedBody]
+    return [code, body]
 }
 
 
@@ -104,7 +98,8 @@ pipeline {
                         withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0", "BOM=target/bom.xml"]) {                           
                             try {
                                 def (code, body) = postSBOM("${BASE_API}/bom", env.KEY, env.UID, env.BOM)
-                                writeFile(file: "token.data", text: body.token)
+                                def parsedBody   = readJSON(text: body)
+                                writeFile(file: "token.data", text: parsedBody.token)
                             } catch (Exception  e) {
                                 error "${e}"
                             }
@@ -119,7 +114,6 @@ pipeline {
                 script {
                     def BASE_API = "http://dtrack-backend:8080/api/v1"
 
-                    // GET the findings
                     withCredentials([string(credentialsId: "dtrack-backend-token", variable: "KEY")]) {
                         withEnv(["UID=e4368795-5409-4b60-bb9d-d448732becb0"]) {
   
